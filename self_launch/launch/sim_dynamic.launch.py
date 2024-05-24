@@ -25,6 +25,12 @@ def generate_launch_description():
                             output='screen',
                             parameters=[{'use_sim_time': False}]  
                             )
+    # 发布GridMap
+    NodeGridMap = Node(package='module_planner',
+                            executable='NodeGridMap',
+                            output='screen',
+                            parameters=[{'use_sim_time': False}]  
+                            )
     
     
     return LaunchDescription([
@@ -32,4 +38,5 @@ def generate_launch_description():
         traj_publisher_Node,
         main_controller_Node,
         Node_record_csv,
+        NodeGridMap,
     ])
