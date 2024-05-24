@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" 
+    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+    name="mbot">
+    
+    <xacro:property name="M_PI" value="3.1415926"/>
+    <!--cylinder_inertial_matrix圆柱体的转动惯量矩阵-->
+    <xacro:macro name="cylinder_inertial_matrix" params="m r h">
+        <inertial>
+            <mass value="${m}" />
+            <inertia ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+                iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
+                izz="${m*r*r/2}" /> 
+        </inertial>
+    </xacro:macro>
+    <!--box_inertial_matrix长方体的转动惯量矩阵-->
+    <xacro:macro name="box_inertial_matrix" params="m x y z">
+        <inertial>
+            <mass value="${m}" />
+            <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0"
+                    iyy="${m*(x*x+z*z)/12}" iyz="0"
+                    izz="${m*(x*x+y*y)/12}" /> 
+        </inertial>
+    </xacro:macro>
+    <!--定义颜色,不起作用
+    <material name="Gray">
+        <color rgba="1 0 0 1.0"/>
+    </material>
+    -->
+
+    <xacro:property name="wheel_mass"   value="2.0" />
+    <xacro:property name="wheel_radius" value="0.84"/>
+    <xacro:property name="wheel_length" value="0.3"/>
+
+    <xacro:property name="wheel_joint_x" value="1.95"/>
+    <xacro:property name="wheel_joint_y" value="1.55"/>
+    <xacro:property name="wheel_joint_z" value="1.0"/>
+
+    <xacro:property name="base_mass"   value="0.01" /> 
+    <xacro:property name="base_length" value="6.0"/>
+    <xacro:property name="base_width" value="3.8"/>
+    <xacro:property name="base_height" value="0.6"/>
+
+
+    <!--开始构建小车-->
+    <xacro:macro name="mbot_base_ego">
+        <!--底盘-->
+        <link name="base_footprint">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.001 0.001 0.001" />
+                </geometry>
+            </visual>
+        </link>
+        <gazebo reference="base_footprint">
+            <turnGravityOff>false</turnGravityOff>
+        </gazebo>
+
+        <!--车身-->
+        <joint name="base_footprint_joint" type="fixed">
+            <origin xyz="0 0 ${base_length/2 + 2*wheel_radius}" rpy="0 0 0" />        
+            <parent link="base_footprint"/>
+            <child link="base_link" />
+        </joint>
+
+        <link name="base_link">
+            <visual>
+                <origin xyz="0.4 0.0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="${base_length} ${base_width} ${base_height}" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.1" rpy="0 0 0" />
+                <geometry>
+                    <box size="${base_length} ${base_width} ${base_height}" />
+                </geometry>
+            </collision>
+            <xacro:box_inertial_matrix m="${base_mass}" x="${base_length}" y="${base_width}" z="${base_height}" />
+        </link>
+        <gazebo reference="base_link">
+            <material>Gazebo/Gray</material>
+        </gazebo>
+
+        <!--左中轮-->
+         <joint name="left_mid_wheel_joint" type="continuous">
+            <!--以车身为参考坐标-->
+            <origin xyz="${0*wheel_joint_x} ${wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="left_mid_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="left_mid_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="left_mid_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>9999</mu1>
+            <mu2>9999</mu2>
+        </gazebo>
+
+        <!-- Transmission is important to link the joints and the controller -->
+        <transmission name="left_mid_wheel_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="left_mid_wheel_joint" >
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="left_mid_wheel_joint_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+         <!--右中轮-->
+         <joint name="right_mid_wheel_joint" type="continuous">
+            <!--以车身为参考坐标-->
+            <origin xyz="${0*wheel_joint_x} ${-1*wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="right_mid_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="right_mid_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="right_mid_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>9999</mu1>
+            <mu2>9999</mu2>
+        </gazebo>
+
+        <transmission name="right_mid_wheel_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="right_mid_wheel_joint" >
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="right_mid_wheel_joint_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+        <!--左前轮-->
+         <joint name="left_front_wheel_joint" type="continuous">
+            <origin xyz="${wheel_joint_x} ${wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="left_front_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="left_front_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="0.0001" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="left_front_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>0.01</mu1>
+            <mu2>0.01</mu2>
+        </gazebo>
+
+         <!--右前轮-->
+         <joint name="right_front_wheel_joint" type="continuous">
+            <origin xyz="${wheel_joint_x} ${-1*wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="right_front_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="right_front_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="0.0001" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="right_front_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>0.01</mu1>
+            <mu2>0.01</mu2>
+        </gazebo>
+        
+        <!--左后轮-->
+         <joint name="left_behind_wheel_joint" type="continuous">
+            <origin xyz="${-1*wheel_joint_x} ${wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="left_behind_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="left_behind_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="0.0001" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="left_behind_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>0.01</mu1>
+            <mu2>0.01</mu2>
+        </gazebo>
+
+         <!--右后轮-->
+         <joint name="right_behind_wheel_joint" type="continuous">
+            <origin xyz="${-1*wheel_joint_x} ${-1*wheel_joint_y} ${-wheel_joint_z}" rpy="0 0 0"/>
+            <parent link="base_link"/>
+            <child link="right_behind_wheel_link"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+
+        <link name="right_behind_wheel_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                    filename="/home/dengjia/DengJia_ws/src/learning_gazebo/meshes/test/test_left_front_wheel_link.STL" />
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertial_matrix  m="0.0001" r="${wheel_radius}" h="${wheel_length}" />
+        </link>
+
+        <gazebo reference="right_behind_wheel_link">
+            <material>Gazebo/Gray</material>
+            <mu1>0.01</mu1>
+            <mu2>0.01</mu2>
+        </gazebo>
+
+        <!-- controller -->
+        <gazebo>
+            <plugin name="differential_drive_controller_front" 
+                    filename="libgazebo_ros_diff_drive.so">                
+                  <update_rate>50</update_rate> 
+                  <left_joint>left_mid_wheel_joint</left_joint>
+                  <right_joint>right_mid_wheel_joint</right_joint>
+                  <wheel_separation>${wheel_joint_y*2.0}</wheel_separation>
+                  <wheel_diameter>${2*wheel_radius}</wheel_diameter>
+                  <max_wheel_torque>9999</max_wheel_torque>
+                  <max_wheel_acceleration>5.0</max_wheel_acceleration>
+                  <command_topic>cmd_vel</command_topic>
+                  <publish_odom>true</publish_odom>
+                  <publish_odom_tf>false</publish_odom_tf>
+                  <publish_wheel_tf>false</publish_wheel_tf>
+                  <odometry_topic>odom</odometry_topic>
+                  <odometry_frame>odom</odometry_frame>
+                  <robot_base_frame>base_footprint</robot_base_frame>
+                  <odometry_source>1</odometry_source>
+            </plugin>
+        </gazebo> 
+
+        <!-- imu -->
+        <!-- 数据有问题，暂不使用 
+        <link name="imu_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.001 0.001 0.001" />
+                </geometry>
+            </visual>
+        </link>
+
+        <joint name="imu_link_joint" type="fixed">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />        
+            <parent link="base_footprint"/>
+            <child link="imu_link" />
+        </joint>
+
+        <gazebo reference="imu_link">
+            <gravity>true</gravity>
+            <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>__default_topic__</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>imu</topicName>
+                <bodyName>imu_link</bodyName>
+                <updateRateHZ>10.0</updateRateHZ>
+                <gaussianNoise>0.0</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>imu_link</frameName>
+                <initialOrientationAsReference>false</initialOrientationAsReference>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+            </sensor>
+        </gazebo>
+        -->
+
+    </xacro:macro>
+
+</robot>
