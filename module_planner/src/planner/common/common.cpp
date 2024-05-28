@@ -131,7 +131,15 @@ bool calculateProjectionPointWithPose(const Traj traj, const WayPoint waypoint,
     }
     if (min_temp == -1)
     {
-        std::cout << "参考线上, could not find match point !!!" << std::endl;
+        std::cout << "规划：参考线上, could not find match point !!!" << std::endl;
+        std::cout << "traj.traj_points.size(): " << traj.traj_points.size() << std::endl;
+        if (traj.traj_points.size() > 0)
+        {
+            std::cout << "traj.traj_points[0]: " << traj.traj_points[0].x << ","
+                      << traj.traj_points[0].y << std::endl;
+        }
+        std::cout << "point: " << waypoint.x << ", " << waypoint.y << std::endl;
+
         return false;
     }
     // std::cout << "参考线上, success !!!"

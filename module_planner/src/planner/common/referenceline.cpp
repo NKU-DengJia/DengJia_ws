@@ -1,8 +1,25 @@
 # include "referenceline.hpp"
 
-ReferenceLine::ReferenceLine() : file_path_("/home/dengjia/DengJia_ws/src/way_network/WayPoints/waypoints_1.txt"){
+ReferenceLine::ReferenceLine(){
+    read_module_planner_ini();
     readWayFromFile(file_path_);
 }
+
+void ReferenceLine::read_module_planner_ini()
+{
+    try
+    {
+        boost::property_tree::ptree pt;
+        boost::property_tree::ini_parser::read_ini("/home/dengjia/DengJia_ws/src/module_planner/src/module_planner.ini", pt);
+        file_path_ =pt.get<std::string>("module_planner.way_file_path_");
+    }
+    catch (const boost::property_tree::ini_parser_error &e)
+    {
+        // 读取失败，输出错误信息
+        std::cerr << "Error reading module_planner.ini: " << e.what() << std::endl;
+    }
+}
+
 
 void ReferenceLine::GenerateReferenceLine(Traj &Traj_){
     Traj_ = way_.toTraj(); 

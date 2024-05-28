@@ -161,8 +161,8 @@ private:
         waypoint_marker.type = visualization_msgs::msg::Marker::POINTS;
         waypoint_marker.action = visualization_msgs::msg::Marker::ADD;
         waypoint_marker.pose.orientation.w = 1.0;
-        waypoint_marker.scale.x = 0.2;
-        waypoint_marker.scale.y = 0.2;
+        waypoint_marker.scale.x = 0.8;
+        waypoint_marker.scale.y = 0.8;
         waypoint_marker.color.r = 0.5;
         waypoint_marker.color.g = 0.5;
         waypoint_marker.color.b = 0.5;

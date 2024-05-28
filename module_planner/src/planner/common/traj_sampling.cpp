@@ -26,7 +26,7 @@ void TrajSampling::read_module_planner_ini()
     catch (const boost::property_tree::ini_parser_error &e)
     {
         // 读取失败，输出错误信息
-        std::cerr << "Error reading module_controller.ini: " << e.what() << std::endl;
+        std::cerr << "Error reading module_planner.ini: " << e.what() << std::endl;
     }
 }
 

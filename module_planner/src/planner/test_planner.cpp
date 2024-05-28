@@ -32,7 +32,6 @@ public:
 
         // 读取.txt路网，生成参考线
         referenceline_.GenerateReferenceLine(referenceline_traj_);
-
         //
         subscription2_ = this->create_subscription<visualization_msgs::msg::Marker>(
             "static_obstacles", 10, std::bind(&TrajPublisher::static_obstacles_callback, this, std::placeholders::_1));
@@ -81,44 +80,13 @@ private:
 
     void publishTraj()
     {
-
         static_obstacles.set_s_l(referenceline_traj_); // 计算障碍物s和l
-
-        // // 测试
-        // for (auto ob : static_obstacles.static_obstacle_set)
-        // {
-        //     std::cout << "障碍物属性： ";
-        //     std::cout << ob.center_x << ", " << ob.center_y << ", "
-        //               << ob.center_s << ", " << ob.center_l << std::endl;
-        // }
-        // std::cout << "障碍物个数： ";
-        // std::cout << static_obstacles.static_obstacle_set.size() << std::endl;
-
-        // 规划起点，障碍物集合，参考线
         DeterminPlanStart();
         traj_ = traj_sampling.obtain_result_traj(plannering_start_point,
                                                  static_obstacles,
                                                  referenceline_traj_); // 采样生成的待平滑的轨迹
-
-        // traj_ = referenceline_traj_; // 用于测试TrajStanleySmooth
-
-        // auto time1 = std::chrono::steady_clock::now(); // 不耗时
-
         TrajStanley TrajStanleySmoothMethod = TrajStanley(traj_);
         traj_ = TrajStanleySmoothMethod.TrajStanleySmooth(); // 平滑后的轨迹
-
-        // 不耗时
-        // auto time2 = std::chrono::steady_clock::now();
-        // auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(time2 - time1); // 计算执行时间
-        // double time_seconds1 = duration1.count() / 1000.0;                                     // 将时间转换为秒
-        // std::cout << "执行时间: " << time_seconds1 << " seconds" << std::endl;
-
-        // 测试
-        // std::cout << "----------------------------------------" << std::endl;
-        // std::cout << "----------------------------------------" << std::endl;
-        // debug(traj_);
-        // traj_sampling.get_cout_execution_time();
-
         auto msg = std::make_shared<self_interface::msg::PlannerTraj>();
         msg->header.stamp = this->now();
         msg->header.frame_id = "/odom";
@@ -127,7 +95,6 @@ private:
         {
             msg->traj_points.push_back(convertTomsg(traj_point));
         }
-
         traj_publisher_->publish(*msg);
     }
 
@@ -156,8 +123,8 @@ private:
                 plannering_start_point.y = EgoStatus_.ego_y;
                 plannering_start_point.theta = EgoStatus_.ego_theta;
                 std::cout << "重规划！！" << std::endl;
-                std::cout << "位置差: "<< std::sqrt(dx * dx + dy * dy) 
-                <<"航向差: "<<std::abs(dtheta)<< std::endl;
+                std::cout << "位置差: " << std::sqrt(dx * dx + dy * dy)
+                          << "航向差: " << std::abs(dtheta) << std::endl;
                 return;
             }
             else

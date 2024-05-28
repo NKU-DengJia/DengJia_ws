@@ -47,66 +47,68 @@ void TrajStanley::read_module_planner_ini()
 Traj TrajStanley::TrajStanleySmooth()
 {
     int i = 0;
-    size_t traj0_last_index = traj0.traj_points.size() - 1;
-    double smax = traj0.traj_points[traj0_last_index].s - traj0.traj_points[0].s; // 待平滑轨迹的长度
-    // std::cout << "smax:" << smax << std::endl;
-    double s = 0.0; // 新轨迹的大概长度
-    while (i < 100)
+    int traj0_last_index = traj0.traj_points.size() - 1;
+    if (traj0_last_index >= 0)
     {
-        s += vel * T * 10;
-        if (s > smax)
+        double smax = traj0.traj_points[traj0_last_index].s - traj0.traj_points[0].s; // 待平滑轨迹的长度
+        // std::cout << "smax:" << smax << std::endl;
+        double s = 0.0; // 新轨迹的大概长度
+        while (i < 100)
         {
-            break;
+            s += vel * T * 10;
+            if (s > smax)
+            {
+                break;
+            }
+            CalculateSmoothTraj();
+            i++;
         }
-        CalculateSmoothTraj();
-        i++;
-    }
-    // std::cout << "s:" << s << std::endl;
+        // std::cout << "s:" << s << std::endl;
 
-    // 给轨迹点补充曲率信息
-    if (traj_result.traj_points.size() <= 2)
-    {
-        // 不足3个点，转换成空轨迹
-        traj_result.traj_points.clear();
-        return traj_result;
-    }
-    // 中间点
-    for (size_t i = 1; i < traj_result.traj_points.size() - 1; ++i)
-    {
-        const auto &point0 = traj_result.traj_points[i - 1];
-        const auto &point1 = traj_result.traj_points[i];
-        const auto &point2 = traj_result.traj_points[i + 1];
-
-        double dx1 = point1.x - point0.x;
-        double dy1 = point1.y - point0.y;
-        double dx2 = point2.x - point1.x;
-        double dy2 = point2.y - point1.y;
-        double dx3 = point2.x - point0.x;
-        double dy3 = point2.y - point0.y;
-
-        double ds1 = sqrt(dx1 * dx1 + dy1 * dy1);
-        double ds2 = sqrt(dx2 * dx2 + dy2 * dy2);
-        double ds3 = sqrt(dx3 * dx3 + dy3 * dy3);
-
-        double s = 0.5 * (ds1 + ds2 + ds3);
-        double kappa = 0.0;
-        double epsilon = 0.02;
-        if (ds1 <= epsilon || ds2 <= epsilon || ds3 <= epsilon)
+        // 给轨迹点补充曲率信息
+        if (traj_result.traj_points.size() <= 2)
         {
-            kappa = 100.0;
+            // 不足3个点，转换成空轨迹
+            traj_result.traj_points.clear();
+            return traj_result;
         }
-        else
+        // 中间点
+        for (size_t i = 1; i < traj_result.traj_points.size() - 1; ++i)
         {
-            kappa = 4 * sqrt(fabs(s * (s - ds1) * (s - ds2) * (s - ds3))) / (ds1 * ds2 * ds3);
-        }
-        traj_result.traj_points[i].kappa = kappa;
-    }
-    // 更新第一个点的曲率为与第二个点相同
-    traj_result.traj_points.front().kappa = traj_result.traj_points[1].kappa;
-    // 更新最后一个点的曲率与倒数第二个点相同
-    size_t last_index = traj_result.traj_points.size() - 1;
-    traj_result.traj_points[last_index].kappa = traj_result.traj_points[last_index - 1].kappa;
+            const auto &point0 = traj_result.traj_points[i - 1];
+            const auto &point1 = traj_result.traj_points[i];
+            const auto &point2 = traj_result.traj_points[i + 1];
 
+            double dx1 = point1.x - point0.x;
+            double dy1 = point1.y - point0.y;
+            double dx2 = point2.x - point1.x;
+            double dy2 = point2.y - point1.y;
+            double dx3 = point2.x - point0.x;
+            double dy3 = point2.y - point0.y;
+
+            double ds1 = sqrt(dx1 * dx1 + dy1 * dy1);
+            double ds2 = sqrt(dx2 * dx2 + dy2 * dy2);
+            double ds3 = sqrt(dx3 * dx3 + dy3 * dy3);
+
+            double s = 0.5 * (ds1 + ds2 + ds3);
+            double kappa = 0.0;
+            double epsilon = 0.02;
+            if (ds1 <= epsilon || ds2 <= epsilon || ds3 <= epsilon)
+            {
+                kappa = 100.0;
+            }
+            else
+            {
+                kappa = 4 * sqrt(fabs(s * (s - ds1) * (s - ds2) * (s - ds3))) / (ds1 * ds2 * ds3);
+            }
+            traj_result.traj_points[i].kappa = kappa;
+        }
+        // 更新第一个点的曲率为与第二个点相同
+        traj_result.traj_points.front().kappa = traj_result.traj_points[1].kappa;
+        // 更新最后一个点的曲率与倒数第二个点相同
+        size_t last_index = traj_result.traj_points.size() - 1;
+        traj_result.traj_points[last_index].kappa = traj_result.traj_points[last_index - 1].kappa;
+    }
     return traj_result;
 }
 
