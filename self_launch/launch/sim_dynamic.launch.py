@@ -32,11 +32,18 @@ def generate_launch_description():
                             parameters=[{'use_sim_time': False}]  
                             )
     
+    NodeLocalFramePublisher = Node(package='module_planner',
+                            executable='NodeLocalFramePublisher',
+                            output='screen',
+                            parameters=[{'use_sim_time': False}]  
+                            )
     
+    # 发布局部坐标系
     return LaunchDescription([
         chassis_sim_NodeDynamic,
         traj_publisher_Node,
         main_controller_Node,
         Node_record_csv,
         NodeGridMap,
+        NodeLocalFramePublisher,
     ])

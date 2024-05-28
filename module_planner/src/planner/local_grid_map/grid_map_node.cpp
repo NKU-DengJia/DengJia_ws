@@ -19,10 +19,10 @@ public:
     {
         read_module_planner_ini();
         ego_status_subscription_ = this->create_subscription<self_interface::msg::EgoStatus>(
-            "ego_status_msg", 10, std::bind(&LocalGridMapPublisher::egoStatusCallback, this, std::placeholders::_1));
+            "ego_status_msg", 20, std::bind(&LocalGridMapPublisher::egoStatusCallback, this, std::placeholders::_1));
 
         local_grid_map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
-            "local_grid_map_msg", 10);
+            "local_grid_map_msg", 20);
     }
 
 private:

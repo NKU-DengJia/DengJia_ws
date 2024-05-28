@@ -42,12 +42,18 @@ add_executable(NodeGridMap
                 src/planner/local_grid_map/grid_map_node.cpp)
 ament_target_dependencies(NodeGridMap rclcpp tf2 tf2_geometry_msgs self_interface nav_msgs)
 
+include_directories(planner/tf)
+add_executable(NodeLocalFramePublisher
+                src/planner/tf/odom2local.cpp)
+ament_target_dependencies(NodeLocalFramePublisher rclcpp tf2 tf2_geometry_msgs self_interface)
+
 install(TARGETS
   NodeReadtxtAndPublish
   NodeEgoMarkerPublish
   NodeTrajPublisher
   NodeTrajMarkerPublisher
   NodeGridMap
+  NodeLocalFramePublisher
   DESTINATION lib/${PROJECT_NAME})
 
 
