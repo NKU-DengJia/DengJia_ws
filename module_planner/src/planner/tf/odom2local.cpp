@@ -32,8 +32,10 @@ private:
         transformStamped.transform.translation.z = 0.0;
         transformStamped.transform.rotation.x = 0.0; 
         transformStamped.transform.rotation.y = 0.0;
-        transformStamped.transform.rotation.z = sin(msg->ego_theta) / 2;
-        transformStamped.transform.rotation.w = cos(msg->ego_theta) / 2;
+        // transformStamped.transform.rotation.z = sin(msg->ego_theta) / 2;
+        // transformStamped.transform.rotation.w = cos(msg->ego_theta) / 2;
+        transformStamped.transform.rotation.z = 0.0;
+        transformStamped.transform.rotation.w = 1.0;
 
         tf_broadcaster_->sendTransform(transformStamped);
     }

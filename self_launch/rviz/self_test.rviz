@@ -60,13 +60,19 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        local_frame:
+          Value: true
+        odom:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        odom:
+          local_frame:
+            {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Marker
@@ -99,7 +105,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        static_obstacles: true
+        {}
       Topic:
         Depth: 36
         Durability Policy: Volatile
@@ -144,7 +150,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
-    Fixed Frame: odom
+    Fixed Frame: local_frame
     Frame Rate: 30
   Name: root
   Tools:
@@ -187,25 +193,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 333.71893310546875
+      Distance: 85.61929321289062
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -250
-        Y: -200
+        X: 0
+        Y: 0
         Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8747968673706055
-      Target Frame: <Fixed Frame>
+      Pitch: 1.4347960948944092
+      Target Frame: local_frame
       Value: Orbit (rviz)
-      Yaw: 5.560431480407715
+      Yaw: 5.8554368019104
     Saved: ~
 Window Geometry:
   Displays:
